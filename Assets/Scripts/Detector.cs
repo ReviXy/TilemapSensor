@@ -6,33 +6,48 @@ using Unity.VisualScripting;
 
 public class Detector
 {
-    private Tilemap tm;
+    public Tilemap tilemap;
     public List<Vector2Int> observationCoords;
-    private GameObject agent;
+    public GameObject agent;
+    public TilemapBuffer tilemapBuffer;
+    public List<TilemapSensorComponent.TileType> tileTypes;
 
-    private TilemapBuffer tilemapBuffer;
-    public Dictionary<Tile, int> tileTypes;
+    private Dictionary<Tile, int> tileTypesDict;
 
-    public Detector(Tilemap tm, List<Vector2Int> observationCoords, GameObject agent, TilemapBuffer tilemapBuffer, Dictionary<Tile, int> tileTypes)
+    public Detector(Tilemap tilemap, GameObject agent, TilemapBuffer tilemapBuffer, List<Vector2Int> observationCoords, List<TilemapSensorComponent.TileType> tileTypes)
     {
-        this.tm = tm;
-        this.observationCoords = observationCoords;
+        this.tilemap = tilemap;
         this.agent = agent;
         this.tilemapBuffer = tilemapBuffer;
+        this.observationCoords = observationCoords;
         this.tileTypes = tileTypes;
+
+        tileTypesDict = new Dictionary<Tile, int>();
+        for (int i = 0; i < tileTypes.Count; i++)
+        {
+            foreach (Tile t in tileTypes[i].tiles)
+                tileTypesDict.Add(t, i + 1);
+        }
     }
 
     public void OnSensorUpdate() {
-        Vector3Int cellAgentPos = tm.LocalToCell(tm.WorldToLocal(agent.transform.position));
+        Vector3Int cellAgentPos = tilemap.WorldToCell(agent.transform.position);
 
         int c = 0;
         foreach(Vector2Int v in observationCoords)
         {
-            Tile tile = tm.GetTile<Tile>(new Vector3Int(cellAgentPos.x + v.x, cellAgentPos.y + v.y, 0));
-            tilemapBuffer.Write(0, c++, tile.IsUnityNull() ? 0 : tileTypes[tile]);
+            Tile tile = tilemap.GetTile<Tile>(new Vector3Int(cellAgentPos.x + v.x, cellAgentPos.y + v.y, 0));
+            tilemapBuffer.Write(0, c++, tile.IsUnityNull() ? 0 : tileTypesDict[tile]);
         }
     }
 
-    public void OnSensorReset() { }
+    public void OnSensorReset() {
+        tileTypesDict = new Dictionary<Tile, int>();
+        for (int i = 0; i < tileTypes.Count; i++)
+        {
+            foreach (Tile t in tileTypes[i].tiles)
+                tileTypesDict.Add(t, i + 1);
+        }
+    }
 
 }

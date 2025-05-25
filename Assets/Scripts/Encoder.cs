@@ -7,43 +7,33 @@ using UnityEngine.Tilemaps;
 
 public class Encoder
 {
-    private TilemapBuffer tilemapBuffer;
-    private Dictionary<Tile, int> tileTypes;
-    private List<Vector2Int> observationCoords;
+    public TilemapBuffer tilemapBuffer;
+    public List<Vector2Int> observationCoords;
+    public List<TilemapSensorComponent.TileType> tileTypes;
 
-    public Encoder(TilemapBuffer tilemapBuffer, Dictionary<Tile, int> tileTypes, List<Vector2Int> observationCoords)
+    public float[] result;
+
+    public Encoder(TilemapBuffer tilemapBuffer, List<Vector2Int> observationCoords, List<TilemapSensorComponent.TileType> tileTypes)
     {
         this.tilemapBuffer = tilemapBuffer;
+        this.observationCoords = observationCoords;
         this.tileTypes = tileTypes;
-        this.observationCoords = observationCoords; 
+
+        result = new float[(tileTypes.Count + tilemapBuffer.NumChannels) * observationCoords.Count];
     }
 
-    public float[] Encode(int channel)
+    public float[] Encode()
     {
-        int types_n = (tileTypes.Values.Distinct().Count() + 1);
-
-        float[] onehot = new float[observationCoords.Count * types_n];
         int c = 0;
-        foreach (float tile in tilemapBuffer.GetChannel(channel))
-        {
-            for (int i = 0; i < types_n; i++)
-                if (i == tile) onehot[c * types_n + i] = 1; else onehot[c * types_n + i] = 0;
-            c++;
-        }
 
-        //StringBuilder sb = new StringBuilder();
-        //for (int j = 0; j < observationCoords.Count; j++)
-        //{
-        //    sb.Append("(");
-        //    for (int i = 0; i < types_n; i++)
-        //    {
-        //        sb.Append($"{onehot[j * types_n + i]} ");
-        //    }
-        //    sb.AppendLine(")");
-        //}
-        //Debug.Log(sb.ToString());
+        foreach (float tile in tilemapBuffer.GetChannel(0))
+            for (int i = 0; i < tileTypes.Count + 1; i++)
+                result[c++] = (i == tile) ? 1 : 0;
 
-        return onehot;
+        foreach (float data in tilemapBuffer.GetChannel(1))
+            result[c++] = data;
+
+        return result;
     }
 
 

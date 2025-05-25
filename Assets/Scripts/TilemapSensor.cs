@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.Tilemaps;
 using System.Linq;
+using System.Text;
 
 public class TilemapSensor : ISensor
 {
@@ -12,28 +13,20 @@ public class TilemapSensor : ISensor
     public Detector Detector { get; private set; }
     public Encoder Encoder { get; private set; }
 
-    public bool AutoDetectionEnabled { get; private set; }
-
     private readonly string m_Name;
     private readonly TilemapBuffer m_TilemapBuffer;
     private readonly ObservationSpec m_ObservationSpec;
-    // PNG compression.
-    private Texture2D m_PerceptionTexture;
-    private List<byte> m_CompressedObs;
 
+    private float[] m_Observation;
 
-    public TilemapSensor(string name, TilemapBuffer buffer, ObservationType observationType)
+    public TilemapSensor(string name, TilemapBuffer buffer, ObservationType observationType, Detector detector, Encoder encoder)
     {
         m_Name = name;
         m_TilemapBuffer = buffer;
-        m_ObservationSpec = ObservationSpec.Vector(m_TilemapBuffer.Count, observationType);
-    }
-
-    public void SetDetectorEncoder(Detector detector, Encoder encoder)
-    {
         Detector = detector;
         Encoder = encoder;
-        AutoDetectionEnabled = true;
+
+        m_ObservationSpec = ObservationSpec.Vector(encoder.result.Length, observationType);
     }
 
     public string GetName()
@@ -58,24 +51,15 @@ public class TilemapSensor : ISensor
 
     public int Write(ObservationWriter writer)
     {
-        int n = m_TilemapBuffer.NumChannels;
+        writer.AddList(m_Observation);
 
-        float[] onehot = Encoder.Encode(0);
-        writer.AddList(onehot);
-
-        for (int c = 1; c < n; c++)
-            writer.AddList(m_TilemapBuffer.GetChannel(c));
-
-        return Detector.observationCoords.Count * n;
+        return m_Observation.Length;
     }
 
     public virtual void Update()
     {
-        if (AutoDetectionEnabled)
-        {
-            Detector.OnSensorUpdate();
-            float[] onehot = Encoder.Encode(0);
-        }
+        Detector.OnSensorUpdate();
+        m_Observation = Encoder.Encode();
 
         UpdateEvent?.Invoke();
     }

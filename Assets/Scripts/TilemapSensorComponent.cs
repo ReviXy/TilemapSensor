@@ -9,16 +9,16 @@ using System.ComponentModel;
 using UnityEngine.Tilemaps;
 using System.Text;
 
-public class TilemapSensorComponent : SensorComponent, IDisposable
+public class TilemapSensorComponent : SensorComponent
 {
     public string SensorName
     {
         get { return m_SensorName; }
         set { m_SensorName = value; }
     }
-
     [SerializeField]
-    private string m_SensorName;
+    [Tooltip("Name of the generated GridSensor.")]
+    private string m_SensorName = "TilemapSensor";
 
     public int ObservationStacks
     {
@@ -26,6 +26,8 @@ public class TilemapSensorComponent : SensorComponent, IDisposable
         set { m_ObservationStacks = value; }
     }
     [SerializeField, Min(1)]
+    [Tooltip("The number of stacked observations. Enable stacking (value > 1) "
+            + "if agents need to infer movement from observations.")]
     private int m_ObservationStacks = 1;
 
     public ObservationType ObservationType
@@ -34,35 +36,24 @@ public class TilemapSensorComponent : SensorComponent, IDisposable
         set { m_ObservationType = value; }
     }
     [SerializeField]
+    [Tooltip("The observation type of the sensor.")]
     private ObservationType m_ObservationType = ObservationType.Default;
 
-    //public List<ChannelLabel> ChannelLabels
-    //{
-    //    get { return m_ChannelLabels; }
-    //    set { m_ChannelLabels = new List<ChannelLabel>(value); }
-    //}
-    //[SerializeField, HideInInspector]
-    //protected List<ChannelLabel> m_ChannelLabels;
+    [SerializeField]
+    [Tooltip("Number of observation channels for buffer.")]
+    private int m_NumChannels = 1;
 
-    //// Non-Editor flag for subcomponents.
-    //protected bool m_Debug_IsEnabled;
-
-    //public TilemapBuffer TilemapBuffer
-    //{
-    //    get { return m_TilemapBuffer; }
-    //    set { m_TilemapBuffer = value; }
-    //}
-    private TilemapBuffer TilemapBuffer;
+    [SerializeField]
+    [Tooltip("ScriptableObject that defines observation shape.")]
+    private GridMapperLite m_GridMap;
         
     [SerializeField]
-    private Tilemap tm;
+    [Tooltip("Tilemap the data will be taken from.")]
+    private Tilemap m_Tilemap;
 
     [SerializeField]
-    private List<TileType> tileTypes = new List<TileType>();
-
-    [SerializeField]
-    private GridMapperLite gridMap;
-    //_____________________________________________________________
+    [Tooltip("Groups of tiles for sensor to detect.")]
+    public List<TileType> m_TileTypes = new List<TileType>();
 
     [System.Serializable]
     public class TileType
@@ -76,14 +67,15 @@ public class TilemapSensorComponent : SensorComponent, IDisposable
             this.tiles = tiles;
         }
     }
+    
+    [HideInInspector]
+    public TilemapSensor m_TilemapSensor;
 
-    //_______________________
+    [HideInInspector]
+    public TilemapBuffer m_TilemapBuffer;
 
-    public TilemapSensor TilemapSensor
-    {
-        get { return m_TilemapSensor; }
-    }
-    protected TilemapSensor m_TilemapSensor;
+    [HideInInspector]
+    public List<Vector2Int> m_ObservationCoords = new List<Vector2Int>();
 
     public bool HasSensor
     {
@@ -93,11 +85,13 @@ public class TilemapSensorComponent : SensorComponent, IDisposable
     public override ISensor[] CreateSensors()
     {
         Vector2Int agentCoord = new Vector2Int(-1, -1);
-        List<Vector2Int> observationCoords = new List<Vector2Int>();
-        int[,] grid = gridMap.Grid();
+        m_ObservationCoords = new List<Vector2Int>();
+        int[,] grid = m_GridMap.Grid();
 
-        for (int y = 0; y < gridMap.row; y++)
-            for (int x = 0; x < gridMap.column; x++)
+        // Process GridMap
+        // Find agent tile
+        for (int y = 0; y < m_GridMap.row; y++)
+            for (int x = 0; x < m_GridMap.column; x++)
                 if (grid[x, y] == 2)
                 {
                     if (agentCoord.x == -1 && agentCoord.y == -1) agentCoord = new Vector2Int(x, y);
@@ -105,32 +99,25 @@ public class TilemapSensorComponent : SensorComponent, IDisposable
                 }
         if (agentCoord.x == -1 && agentCoord.y == -1) throw new ArgumentException("No agent tile.");
 
-        for (int y = 0; y < gridMap.row; y++)
-            for (int x = 0; x < gridMap.column; x++)
+        // Get Coordinates of captured tiles relative to agent
+        for (int y = 0; y < m_GridMap.row; y++)
+            for (int x = 0; x < m_GridMap.column; x++)
             {
-                if (grid[x, y] == 1) observationCoords.Add(new Vector2Int(x - agentCoord.x, y - agentCoord.y));
-                if (grid[x, y] == 2 && gridMap.consider_agent_tile_an_observation) observationCoords.Add(new Vector2Int(0, 0));
+                if (grid[x, y] == 1) m_ObservationCoords.Add(new Vector2Int(x - agentCoord.x, y - agentCoord.y));
+                if (grid[x, y] == 2 && m_GridMap.consider_agent_tile_an_observation) m_ObservationCoords.Add(new Vector2Int(0, 0));
             }
-        if (observationCoords.Count == 0) throw new ArgumentException("No observation tiles.");
+        if (m_ObservationCoords.Count == 0) throw new ArgumentException("No observation tiles.");
 
-        if (TilemapBuffer == null)
-            TilemapBuffer = new TilemapBuffer(1, observationCoords.Count);
+        // Create buffer
+        if (m_TilemapBuffer == null)
+            m_TilemapBuffer = new TilemapBuffer(m_NumChannels, m_ObservationCoords.Count);
 
-        Dictionary<Tile, int> temp = new Dictionary<Tile, int>();
-        for (int i = 0; i < tileTypes.Count; i++)
-        {
-            foreach (Tile t in tileTypes[i].tiles)
-                temp.Add(t, i + 1);
-        }
+        Detector detector = new Detector(m_Tilemap, gameObject, m_TilemapBuffer, m_ObservationCoords, m_TileTypes);
+        Encoder encoder = new Encoder(m_TilemapBuffer, m_ObservationCoords, m_TileTypes);
 
-        Detector detector = new Detector(tm, observationCoords, gameObject, TilemapBuffer, temp);
-        Encoder encoder = new Encoder(TilemapBuffer, temp, observationCoords);
+        m_TilemapSensor = new TilemapSensor(m_SensorName, m_TilemapBuffer, m_ObservationType, detector, encoder);
 
-        m_TilemapSensor = new TilemapSensor(m_SensorName, TilemapBuffer, m_ObservationType);
-        m_TilemapSensor.SetDetectorEncoder(detector, encoder);
-
-        //--------
-
+        // Handle stacking sensors
         if (m_ObservationStacks > 1)
             return new ISensor[] { new StackingSensor(m_TilemapSensor, m_ObservationStacks) };
         return new ISensor[] { m_TilemapSensor };
@@ -140,22 +127,4 @@ public class TilemapSensorComponent : SensorComponent, IDisposable
     {
         m_TilemapSensor?.Update();
     }
-
-    //________________________
-
-    private void Reset()
-    {
-        HandleReset();
-    }
-
-    protected virtual void HandleReset() { }
-    private void OnDestroy()
-    {
-        Dispose();
-    }
-
-    public virtual void Dispose() { }
-
-
-
 }
