@@ -45,7 +45,7 @@ public class TilemapSensorComponent : SensorComponent
 
     [SerializeField]
     [Tooltip("ScriptableObject that defines observation shape.")]
-    private GridMapperLite m_GridMap;
+    private GridMap m_GridMap;
         
     [SerializeField]
     [Tooltip("Tilemap the data will be taken from.")]

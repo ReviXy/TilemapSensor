@@ -37,7 +37,7 @@ public class Detector
         foreach(Vector2Int v in observationCoords)
         {
             Tile tile = tilemap.GetTile<Tile>(new Vector3Int(cellAgentPos.x + v.x, cellAgentPos.y + v.y, 0));
-            tilemapBuffer.Write(0, c++, tile.IsUnityNull() ? 0 : tileTypesDict[tile]);
+            tilemapBuffer.Write(0, c++, (tile.IsUnityNull() || !tileTypesDict.ContainsKey(tile)) ? 0 : tileTypesDict[tile]);
         }
     }
 

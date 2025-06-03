@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(GridMapperLite))]
+[CustomEditor(typeof(GridMap))]
 public class GridMapperLiteEditor : Editor
 {
     float width;
@@ -19,15 +19,15 @@ public class GridMapperLiteEditor : Editor
 
     private void OnEnable()
     {
-        row = serializedObject.FindProperty(nameof(GridMapperLite.row));
-        column = serializedObject.FindProperty(nameof(GridMapperLite.column));
-        gridArray = serializedObject.FindProperty(nameof(GridMapperLite.gridArray));
-        consider_agent_tile_an_observation = serializedObject.FindProperty(nameof(GridMapperLite.consider_agent_tile_an_observation));
+        row = serializedObject.FindProperty(nameof(GridMap.row));
+        column = serializedObject.FindProperty(nameof(GridMap.column));
+        gridArray = serializedObject.FindProperty(nameof(GridMap.gridArray));
+        consider_agent_tile_an_observation = serializedObject.FindProperty(nameof(GridMap.consider_agent_tile_an_observation));
 
         int[] tempArray = new int[gridArray.arraySize];
         for (int i = 0; i < gridArray.arraySize; i++) { tempArray[i] = gridArray.GetArrayElementAtIndex(i).intValue; }
 
-        grid = GridMapperLite.Grid(row.intValue, column.intValue, tempArray);
+        grid = GridMap.Grid(row.intValue, column.intValue, tempArray);
     }
 
     public override void OnInspectorGUI()
@@ -41,8 +41,6 @@ public class GridMapperLiteEditor : Editor
         }
         serializedObject.Update();
 
-        //width = EditorGUIUtility.currentViewWidth - 30f;
-  
         EditorGUILayout.LabelField("Grid Dimensions", EditorStyles.boldLabel);
 
         //TOP BOX
@@ -101,7 +99,6 @@ public class GridMapperLiteEditor : Editor
         EditorGUILayout.EndVertical();
         //TOP BOX END
 
-
         //GRID LAYOUT
         EditorGUILayout.LabelField("Layout", EditorStyles.boldLabel);
 
@@ -142,7 +139,7 @@ public class GridMapperLiteEditor : Editor
                     switch (grid[i, j])
                     {
                         case 0: layoutHelpColor = Color.gray; buttonToolTip = "Empty"; break;
-                        case 1: layoutHelpColor = Color.green; buttonToolTip = "Taken"; break;
+                        case 1: layoutHelpColor = Color.green; buttonToolTip = "Observation"; break;
                         case 2: layoutHelpColor = Color.blue; buttonToolTip = "Agent"; break;
                         case 3: layoutHelpColor = Color.gray; buttonToolTip = "Empty"; break;
                     }
