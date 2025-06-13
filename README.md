@@ -9,7 +9,7 @@ It is compatible with [v3.0.0 / release 22](https://github.com/Unity-Technologie
 4. Type in `https://github.com/ReviXy/TilemapSensor.git`.
 
 # Tilemap Sensor Component
-![TilemapSensorComponent](Documentation~/Images/TilemapSensorComponent.PNG)
+![TilemapSensorComponent](Documentation~/Images/TilemapSensorComponent.PNG)  
 ### Sensor Settings
 - `Sensor Name`  - Name of the generated grid sensor.
 - `Observation Stacks`  - The number of stacked observations.
@@ -20,7 +20,7 @@ It is compatible with [v3.0.0 / release 22](https://github.com/Unity-Technologie
 - `Tile Types` - List of groups of tiles. Each group has a name and its tile list.
 
 ### Grid Map
- ![GridMap](Documentation~/Images/GridMap.PNG)
+ ![GridMap](Documentation~/Images/GridMap.PNG)  
  Grid map is a scriptable object that is used to optimize the amount of input data for agent. 
  You can select the size of display grid and then mark the agent cell and captured cells by clicking the buttons on grid. Coordinates of captured cells are calculated relatively to agents cell position, so it doesn't matter if you make the grid too big.
 Note that you can capture information about the cell where agent currently is by turning on corresponding flag.
