@@ -1,0 +1,18 @@
+{
+  "name": "com.revixy.tilemap-sensor",
+  "version": "1.0.0",
+  "displayName": "Tilemap Sensor",
+  "description": "This is a sensor for the Unity Machine Learning Agents Toolkit",
+  "unity": "6000.0",
+  "dependencies": {
+    "com.unity.ml-agents": "3.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Maze Explorer",
+      "description": "A simple environment where agent moves stepwise through a random maze.",
+      "path": "Samples~/MazeExplorer"
+    }
+  ]
+  
+}

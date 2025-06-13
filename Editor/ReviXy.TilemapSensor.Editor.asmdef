@@ -1,0 +1,16 @@
+{
+    "name": "ReviXy.TilemapSensor.Editor",
+    "rootNamespace": "",
+    "references": [
+        "ReviXy.TilemapSensor"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
