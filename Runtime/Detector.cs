@@ -6,11 +6,11 @@ using Unity.VisualScripting;
 
 public class Detector
 {
-    public Tilemap tilemap;
-    public List<Vector2Int> observationCoords;
-    public GameObject agent;
-    public TilemapBuffer tilemapBuffer;
-    public List<TilemapSensorComponent.TileType> tileTypes;
+    private Tilemap tilemap;
+    private List<Vector2Int> observationCoords;
+    private GameObject agent;
+    private TilemapBuffer tilemapBuffer;
+    private List<TilemapSensorComponent.TileType> tileTypes;
 
     private Dictionary<Tile, int> tileTypesDict;
 

@@ -67,15 +67,30 @@ public class TilemapSensorComponent : SensorComponent
             this.tiles = tiles;
         }
     }
-    
-    [HideInInspector]
-    public TilemapSensor m_TilemapSensor;
 
+    public TilemapSensor TilemapSensor
+    {
+        get { return m_TilemapSensor; }
+        set { m_TilemapSensor = value; }
+    }
     [HideInInspector]
-    public TilemapBuffer m_TilemapBuffer;
+    private TilemapSensor m_TilemapSensor;
 
+    public TilemapBuffer TilemapBuffer
+    {
+        get { return m_TilemapBuffer; }
+        set { m_TilemapBuffer = value; }
+    }
     [HideInInspector]
-    public List<Vector2Int> m_ObservationCoords = new List<Vector2Int>();
+    private TilemapBuffer m_TilemapBuffer;
+
+    public List<Vector2Int> ObservationCoords
+    {
+        get { return m_ObservationCoords; }
+        set { m_ObservationCoords = value; }
+    }
+    [HideInInspector]
+    private List<Vector2Int> m_ObservationCoords = new List<Vector2Int>();
 
     public bool HasSensor
     {

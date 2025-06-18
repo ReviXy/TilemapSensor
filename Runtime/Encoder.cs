@@ -7,9 +7,9 @@ using UnityEngine.Tilemaps;
 
 public class Encoder
 {
-    public TilemapBuffer tilemapBuffer;
-    public List<Vector2Int> observationCoords;
-    public List<TilemapSensorComponent.TileType> tileTypes;
+    private TilemapBuffer tilemapBuffer;
+    private List<Vector2Int> observationCoords;
+    private List<TilemapSensorComponent.TileType> tileTypes;
 
     public float[] result;
 
